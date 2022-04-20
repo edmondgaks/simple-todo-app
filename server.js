@@ -1,6 +1,20 @@
 let express = require('express');
+let mongodb = require('mongodb');
 
 let app = express()
+let db
+
+let connectionString = 'mongodb+srv://todoApp-user:matwigari@cluster0.fg5tm.mongodb.net/TodoApp?retryWrites=true&w=majority';
+
+mongodb.connect(connectionString,{useNewUrlParser: true}, function(err,client) {
+    db = client.db()
+    app.listen(3000)
+})
+
+
+
+app.use(express.urlencoded({extended: false}))
+
 
 app.get('/',function(req,res) {
     res.send(`<!DOCTYPE html>
@@ -16,9 +30,9 @@ app.get('/',function(req,res) {
         <h1 class="display-4 text-center py-1">To-Do App</h1>
         
         <div class="jumbotron p-3 shadow-sm">
-          <form>
+          <form action="/create-item" method="POST">
             <div class="d-flex align-items-center">
-              <input autofocus autocomplete="off" class="form-control mr-3" type="text" style="flex: 1;">
+              <input name="item" autofocus autocomplete="off" class="form-control mr-3" type="text" style="flex: 1;">
               <button class="btn btn-primary">Add New Item</button>
             </div>
           </form>
@@ -54,4 +68,9 @@ app.get('/',function(req,res) {
     </html>`)
 })
 
-app.listen(3000)
+app.post('/create-item', function(req,res) {
+    db.collection('items').insertOne({text: req.body.item}, function() {
+        res.send("Thanks for submitting this form")
+    })
+})
+
